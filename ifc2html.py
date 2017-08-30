@@ -22,12 +22,18 @@ def attr2str(attr):
         else:
             a_info = attr.get_info()
             return "%s(%s)" % (a_info["type"], a_info["wrappedValue"])
-            
 
     if isinstance(attr, collections.Iterable): # tuple, list or somesuch
         return "(%s)" % ",".join([attr2str(a) for a in attr])
 
     return type(attr)
+
+def attr2html(attr_name, attr_val):
+    return "<span title=\"%s\">%s</span>" % (attr_name, attr2str(attr_val))
+
+def get_attr_names(entity):
+    attr_num = len(entity)
+    return [entity.attribute_name(i) for i in range(attr_num)]
 
 if len(sys.argv) < 2:
     print("No IFC file specified")
@@ -42,10 +48,9 @@ IfcFile = ifcopenshell.open(IfcFileName)
 for entity in IfcFile:
     e_id = entity.id()
     e_type = entity.get_info()["type"]
-    attrs = ", ".join([attr2str(a) for a in entity])
-#    for attrib in entity:
-#        stdout.write("%s " % (attr2str(attrib)))
-
-    stdout.write("<a name=\"%s\">#%s=%s(%s)</a><br>\n" % (e_id, e_id, e_type, attrs))
+    attr_names = get_attr_names(entity)
+    attrs = ", ".join([attr2html(a_name, a_val) for a_name, a_val in zip(attr_names, entity)])
+    stdout.write("<a name=\"%s\">#</a>%s=%s(%s)<br>\n" % (e_id, e_id, e_type, attrs))
 
 stdout.write("</body></html>\n")
+
